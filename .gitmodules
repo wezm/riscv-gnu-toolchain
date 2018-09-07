@@ -1,6 +1,6 @@
 [submodule "riscv-gcc"]
 	path = riscv-gcc
-	url = ../riscv-gcc.git
+	url = git://github.com/sifive/riscv-gcc.git
 [submodule "riscv-glibc"]
 	path = riscv-glibc
 	url = ../riscv-glibc.git
