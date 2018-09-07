@@ -18,4 +18,4 @@
 	url = git://github.com/sifive/riscv-binutils-gdb.git
 [submodule "riscv-gdb"]
 	path = riscv-gdb
-	url = git://sourceware.org/git/binutils-gdb.git
+	url = git://github.com/sifive/riscv-binutils-gdb.git
