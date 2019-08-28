@@ -81,6 +81,14 @@ MUSL_CXX_FOR_TARGET ?= $(MUSL_TUPLE)-g++
 
 CONFIGURE_HOST   = @configure_host@
 
+#For cross-compiling to Windows
+
+ifdef CONFIGURE_HOST
+    TARGET_GCC_EXECUTABLE := $(NEWLIB_TUPLE)-gcc
+else
+    TARGET_GCC_EXECUTABLE := $(INSTALL_DIR)/bin/$(NEWLIB_TUPLE)-gcc
+endif
+
 all: @default_target@
 newlib: stamps/build-gcc-newlib-stage2
 linux: stamps/build-gcc-linux-stage2
@@ -408,7 +416,8 @@ stamps/build-binutils-newlib: $(srcdir)/riscv-binutils
 		--disable-gdb \
 		--disable-sim \
 		--disable-libdecnumber \
-		--disable-readline
+		--disable-readline \
+		--disable-nls
 	$(MAKE) -C $(notdir $@)
 	$(MAKE) -C $(notdir $@) install
 	mkdir -p $(dir $@) && touch $@
@@ -434,6 +443,10 @@ stamps/build-gdb-newlib: $(srcdir)/riscv-gdb
 	$(MAKE) -C $(notdir $@) install
 	mkdir -p $(dir $@) && touch $@
 
+ifdef CONFIGURE_HOST
+stamps/build-gcc-newlib-stage1: stamps/build-binutils-newlib
+	mkdir -p $(dir $@) && touch $@
+else
 stamps/build-gcc-newlib-stage1: $(srcdir)/riscv-gcc stamps/build-binutils-newlib
 	if test -f $</contrib/download_prerequisites && test "@NEED_GCC_EXTERNAL_LIBRARIES@" == "true"; then cd $< && ./contrib/download_prerequisites; fi
 	rm -rf $@ $(notdir $@)
@@ -465,6 +478,8 @@ stamps/build-gcc-newlib-stage1: $(srcdir)/riscv-gcc stamps/build-binutils-newlib
 	$(MAKE) -C $(notdir $@) all-gcc
 	$(MAKE) -C $(notdir $@) install-gcc
 	mkdir -p $(dir $@) && touch $@
+
+endif
 
 stamps/build-newlib: $(srcdir)/riscv-newlib stamps/build-gcc-newlib-stage1
 	rm -rf $@ $(notdir $@)
@@ -510,7 +525,7 @@ stamps/build-newlib-nano: $(srcdir)/riscv-newlib stamps/build-gcc-newlib-stage1
 stamps/merge-newlib-nano: stamps/build-newlib-nano stamps/build-newlib
 # Copy nano library files into newlib install dir.
 	set -e; \
-        for ml in `$(INSTALL_DIR)/bin/$(NEWLIB_TUPLE)-gcc --print-multi-lib`; \
+        for ml in `$(TARGET_GCC_EXECUTABLE) --print-multi-lib`; \
 	do \
 	    mld=`echo $${ml} | sed -e 's/;.*$$//'`; \
 	    cp $(builddir)/install-newlib-nano/$(NEWLIB_TUPLE)/lib/$${mld}/libc.a \
