@@ -1,0 +1,7 @@
+#!/bin/sh
+
+./configure --prefix=/out --enable-multilib
+
+# XXX: Parallel build fails
+# make -j$(nproc)
+make
